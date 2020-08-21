@@ -1,10 +1,12 @@
+import "reflect-metadata"; // [TypeGraphQL] required to make the type reflection work
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import mikroCofig from "./mikro-orm.config";
 import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-import { HelloResolver } from "./reslovers/hello";
+import { HelloResolver } from "./resolvers/hello";
+import { PostResolver } from "./resolvers/post";
 
 (async () => {
   const orm = await MikroORM.init(mikroCofig);
@@ -14,9 +16,10 @@ import { HelloResolver } from "./reslovers/hello";
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [HelloResolver],
+      resolvers: [HelloResolver, PostResolver],
       validate: false,
     }),
+    context: () => ({ em: orm.em }),
   });
 
   apolloServer.applyMiddleware({ app });
